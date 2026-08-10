@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
 
   // Cria contato no Bling
   let bling_cliente_id: string | null = null
+  let bling_error: string | null = null
   try {
     const blingRes = await blingPost('/contatos', {
       nome,
@@ -35,7 +36,8 @@ export async function POST(req: NextRequest) {
     })
     bling_cliente_id = String(blingRes?.data?.id ?? '')
   } catch (e) {
-    console.error('Bling contato error:', e)
+    bling_error = e instanceof Error ? e.message : String(e)
+    console.error('Bling contato error:', bling_error)
   }
 
   // Salva no Supabase
@@ -52,5 +54,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ ok: true, participante: data })
+  return NextResponse.json({ ok: true, participante: data, bling_error })
 }
