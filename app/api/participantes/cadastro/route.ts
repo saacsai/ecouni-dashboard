@@ -28,14 +28,14 @@ export async function POST(req: NextRequest) {
     const blingRes = await blingPost('/contatos', {
       nome,
       cpfCnpj: cpf.replace(/\D/g, ''),
-      telefone: whatsapp.replace(/\D/g, ''),
+      celular: whatsapp.replace(/\D/g, ''),
       tipoPessoa: 'F',
+      tipo: 'C',
       situacao: 'A',
     })
     bling_cliente_id = String(blingRes?.data?.id ?? '')
   } catch (e) {
-    console.error('Bling error (não bloqueia):', e)
-    // Não bloqueia o cadastro se o Bling falhar — salva sem o ID
+    console.error('Bling contato error:', e)
   }
 
   // Salva no Supabase

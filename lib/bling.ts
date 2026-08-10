@@ -17,17 +17,35 @@ async function getAccessToken(): Promise<string> {
   // Renova se expira em menos de 5 minutos
   const expiresAt = new Date(row.expires_at).getTime()
   if (Date.now() > expiresAt - 5 * 60 * 1000) {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('supabase.co', 'supabase.co')}/api/bling/refresh`, {
+    const clientId     = process.env.BLING_CLIENT_ID!
+    const clientSecret = process.env.BLING_CLIENT_SECRET!
+    const credentials  = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
+
+    const res = await fetch('https://www.bling.com.br/Api/v3/oauth/token', {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${credentials}`,
+      },
+      body: new URLSearchParams({
+        grant_type:    'refresh_token',
+        refresh_token: row.refresh_token,
+      }),
     })
+
     if (!res.ok) throw new Error('Falha ao renovar token Bling')
-    const { data: fresh } = await sb
-      .from('ecouni_bling_tokens')
-      .select('access_token')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single()
-    return fresh!.access_token
+
+    const tokenData = await res.json()
+    const newExpiresAt = new Date(Date.now() + tokenData.expires_in * 1000).toISOString()
+
+    await sb.from('ecouni_bling_tokens').update({
+      access_token:  tokenData.access_token,
+      refresh_token: tokenData.refresh_token,
+      expires_at:    newExpiresAt,
+      updated_at:    new Date().toISOString(),
+    }).eq('id', row.id)
+
+    return tokenData.access_token
   }
 
   return row.access_token
