@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabase'
 
-const BLING_API = 'https://www.bling.com.br/Api/v3'
+const BLING_API = 'https://api.bling.com.br/Api/v3'
 
 async function getAccessToken(): Promise<string> {
   const sb = getSupabaseAdmin()
