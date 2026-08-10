@@ -30,8 +30,7 @@ export async function POST(req: NextRequest) {
       nome,
       cpfCnpj: cpf.replace(/\D/g, ''),
       celular: whatsapp.replace(/\D/g, ''),
-      tipoPessoa: 'F',
-      tipo: 'C',
+      tipoPessoa: 'Fisica',
       situacao: 'A',
     })
     bling_cliente_id = String(blingRes?.data?.id ?? '')
