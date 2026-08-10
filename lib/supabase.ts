@@ -118,18 +118,22 @@ export interface Grupo {
   created_at: string
 }
 
-export interface Funcionario {
+export interface Participante {
   id: string
   grupo_id: string
   nome: string
   whatsapp: string
   cpf: string | null
+  bling_cliente_id: string | null
   preferencias_nunca: string[]
   ativo: boolean
   created_at: string
   // joins
   ecouni_grupos?: Grupo
 }
+
+/** @deprecated usar Participante */
+export type Funcionario = Participante
 
 export interface Ciclo {
   id: string
