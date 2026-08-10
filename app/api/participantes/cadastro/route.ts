@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   try {
     const blingRes = await blingPost('/contatos', {
       nome,
-      cpfCnpj: cpf.replace(/\D/g, ''),
+      numeroDocumento: cpf.replace(/\D/g, ''),
       celular: whatsapp.replace(/\D/g, ''),
       tipo: 'F',
       situacao: 'A',
