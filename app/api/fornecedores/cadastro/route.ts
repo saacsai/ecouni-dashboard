@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
       celular: whatsDigits,
       tipo: isCNPJ ? 'J' : 'F',
       situacao: 'A',
+      tiposContato: [{ descricao: 'Fornecedor' }],
     }
     if (email) blingBody.email = email
 

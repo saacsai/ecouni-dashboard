@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       celular: whatsapp.replace(/\D/g, ''),
       tipo: 'F',
       situacao: 'A',
+      tiposContato: [{ descricao: 'Cliente' }],
     }
     if (email) blingBody.email = email
     const blingRes = await blingPost('/contatos', blingBody)
