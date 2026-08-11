@@ -25,7 +25,8 @@ const DIAS_RETIRADA = [
 
 const EMPTY: Omit<Grupo, 'id' | 'created_at'> = {
   nome: '', endereco_entrega: '', municipio: '', contato_nome: '',
-  contato_whatsapp: '', ativo: true,
+  contato_whatsapp: '', contato_email: null, ativo: true,
+  status_formacao: 'em_formacao', qtd_participantes_estimada: null,
   dias_pedido: null, horario_pedido_limite: null, dia_retirada: null,
   horario_retirada_inicio: null, horario_retirada_fim: null,
   pedido_minimo: null, tempo_montagem_min: 15,
