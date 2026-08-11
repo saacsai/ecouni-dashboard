@@ -15,7 +15,7 @@ export function getSupabaseAdmin() {
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
-export type CategoriaProduto   = 'folhosa' | 'legume' | 'fruta' | 'grao' | 'processado' | 'outro'
+export type CategoriaProduto   = 'folhosa' | 'legume' | 'fruta' | 'grao' | 'granjeiro' | 'min_processado' | 'processado' | 'outro'
 export type TipoEstoque        = 'prospectivo' | 'fisico'
 export type CanalPreco         = 'atacado' | 'ecouni'
 export type StatusDisponib     = 'informado' | 'pedido_feito' | 'confirmado' | 'entregue'
