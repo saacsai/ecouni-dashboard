@@ -7,7 +7,9 @@ import type { Fornecedor, Produto, FornecedorProduto } from '@/lib/supabase'
 const PRIMARY = '#1B5E37'
 
 const EMPTY: Omit<Fornecedor, 'id' | 'created_at'> = {
-  nome: '', whatsapp: '', municipio: '', uf: '', bling_fornecedor_id: null,
+  nome: '', cnpj_cpf: null, whatsapp: '', contato_nome: null, email: null,
+  municipio: '', uf: '', inscricao_estadual: null, numero_caf: null,
+  tipos_produto: null, bling_fornecedor_id: null,
   distancia_ceagesp_km: null, token_portal: null, ativo: true,
 }
 
