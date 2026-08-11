@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
 
   // Cria contato no Bling
   let bling_cliente_id: string | null = null
+  let bling_error: string | null = null
   try {
     const blingBody: Record<string, unknown> = {
       nome,
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
     const blingRes = await blingPost('/contatos', blingBody)
     bling_cliente_id = String(blingRes?.data?.id ?? '')
   } catch (e) {
+    bling_error = String(e)
     console.error('Bling contato error:', e)
   }
 
@@ -55,5 +57,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ ok: true, participante: data })
+  return NextResponse.json({ ok: true, participante: data, bling_error })
 }
