@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
-import { blingPost, blingPatch } from '@/lib/bling'
+import { blingPost } from '@/lib/bling'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
@@ -53,17 +53,11 @@ export async function POST(req: NextRequest) {
       celular: whatsDigits,
       tipo: isCNPJ ? 'J' : 'F',
       situacao: 'A',
-      tiposContato: [{ descricao: 'Fornecedor' }],
     }
     if (email) blingBody.email = email
 
     const blingRes = await blingPost('/contatos', blingBody)
     bling_fornecedor_id = String(blingRes?.data?.id ?? '')
-    if (bling_fornecedor_id) {
-      await blingPatch(`/contatos/${bling_fornecedor_id}`, {
-        tiposContato: [{ descricao: 'Fornecedor' }],
-      })
-    }
   } catch (e) {
     console.error('Bling contato error:', e)
   }
