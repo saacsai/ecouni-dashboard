@@ -7,7 +7,7 @@ export async function GET() {
     const atual = await blingGet('/contatos/18321422108')
     const c = atual.data
 
-    const data = await blingPut('/contatos/18321422108', {
+    await blingPut('/contatos/18321422108', {
       nome: c.nome,
       tipo: c.tipo,
       situacao: c.situacao,
@@ -16,7 +16,9 @@ export async function GET() {
       email: c.email,
       tiposContato: [{ descricao: 'Cliente' }],
     })
-    return NextResponse.json({ ok: true, data })
+    // Confirma o que foi salvo
+    const atualizado = await blingGet('/contatos/18321422108')
+    return NextResponse.json({ ok: true, tiposContato: atualizado.data.tiposContato })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }

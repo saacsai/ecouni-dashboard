@@ -91,7 +91,8 @@ export async function blingPut(path: string, body: object) {
     const err = await res.text()
     throw new Error(`Bling PUT ${path} falhou: ${res.status} — ${err}`)
   }
-  return res.json()
+  const text = await res.text()
+  return text ? JSON.parse(text) : null
 }
 
 export async function blingPatch(path: string, body: object) {
