@@ -77,6 +77,23 @@ export async function blingPost(path: string, body: object) {
   return res.json()
 }
 
+export async function blingPut(path: string, body: object) {
+  const token = await getAccessToken()
+  const res = await fetch(`${BLING_API}${path}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Bling PUT ${path} falhou: ${res.status} — ${err}`)
+  }
+  return res.json()
+}
+
 export async function blingPatch(path: string, body: object) {
   const token = await getAccessToken()
   const res = await fetch(`${BLING_API}${path}`, {
