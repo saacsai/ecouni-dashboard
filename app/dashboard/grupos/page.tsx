@@ -25,7 +25,7 @@ const DIAS_RETIRADA = [
 
 const EMPTY: Omit<Grupo, 'id' | 'created_at'> = {
   nome: '', endereco_entrega: '', municipio: '', contato_nome: '',
-  contato_whatsapp: '', bling_cliente_id: null, ativo: true,
+  contato_whatsapp: '', ativo: true,
   dias_pedido: null, horario_pedido_limite: null, dia_retirada: null,
   horario_retirada_inicio: null, horario_retirada_fim: null,
   pedido_minimo: null, tempo_montagem_min: 15,
@@ -48,7 +48,7 @@ export default function GruposPage() {
   useEffect(() => { carregar() }, [])
 
   function abrir(g?: Grupo) {
-    if (g) { setForm({ ...g, bling_cliente_id: g.bling_cliente_id ?? null }); setEditId(g.id) }
+    if (g) { setForm({ ...g }); setEditId(g.id) }
     else   { setForm({ ...EMPTY }); setEditId(null) }
     setDrawer(true)
   }
@@ -71,7 +71,6 @@ export default function GruposPage() {
       municipio: form.municipio || null,
       contato_nome: form.contato_nome || null,
       contato_whatsapp: form.contato_whatsapp || null,
-      bling_cliente_id: form.bling_cliente_id || null,
       ativo: form.ativo,
       // Regras de operação
       dias_pedido: form.dias_pedido,
@@ -98,7 +97,6 @@ export default function GruposPage() {
     { label: 'Município',                 key: 'municipio' as const, placeholder: 'Ex: Santo André' },
     { label: 'Nome do contato',           key: 'contato_nome' as const, placeholder: 'Responsável pelas entregas' },
     { label: 'WhatsApp do contato',       key: 'contato_whatsapp' as const, placeholder: '11999990000' },
-    { label: 'ID Bling (cliente)',        key: 'bling_cliente_id' as const, placeholder: 'Preenchido após cadastro no Bling' },
   ]
 
   return (

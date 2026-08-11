@@ -27,7 +27,7 @@ export default function ParticiparPage() {
   const [saving,  setSaving]  = useState(false)
   const [erro,    setErro]    = useState('')
   const [form, setForm] = useState({
-    nome: '', cpf: '', whatsapp: '', grupo_id: '',
+    nome: '', cpf: '', whatsapp: '', email: '', grupo_id: '',
   })
 
   useEffect(() => {
@@ -137,6 +137,16 @@ export default function ParticiparPage() {
                 type="text" required value={form.whatsapp}
                 onChange={e => set('whatsapp', fmtWhats(e.target.value))}
                 placeholder="(11) 99999-0000"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1B5E37]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+              <input
+                type="email" value={form.email}
+                onChange={e => set('email', e.target.value)}
+                placeholder="seu@email.com"
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-[#1B5E37]"
               />
             </div>

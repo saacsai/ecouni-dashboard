@@ -1,38 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { blingPost } from '@/lib/bling'
 
 export async function POST(req: NextRequest) {
-  const { nome, contato_nome, whatsapp, municipio, uf } = await req.json()
+  const body = await req.json()
 
-  if (!nome || !contato_nome || !whatsapp || !municipio || !uf) {
+  const {
+    cnpj_cpf,
+    nome,
+    contato_nome,
+    whatsapp,
+    email,
+    municipio,
+    uf,
+    inscricao_estadual,
+    numero_caf,
+    tipos_produto,
+  } = body
+
+  if (!cnpj_cpf || !nome || !contato_nome || !whatsapp || !municipio || !uf || !tipos_produto?.length) {
     return NextResponse.json(
-      { error: 'Campos obrigatórios: nome, contato_nome, whatsapp, municipio, uf' },
+      { error: 'Campos obrigatórios: documento, nome, contato, whatsapp, município, UF e tipo de produto.' },
       { status: 400 },
     )
   }
 
   const sb = getSupabaseAdmin()
-  const whatsappDigits = whatsapp.replace(/\D/g, '')
+  const docDigits  = cnpj_cpf.replace(/\D/g, '')
+  const whatsDigits = whatsapp.replace(/\D/g, '')
+  const isCNPJ = docDigits.length === 14
 
-  // Verifica se WhatsApp já cadastrado
+  // Duplicate check: whatsapp OR cnpj_cpf
   const { data: existente } = await sb
     .from('ecouni_fornecedores')
     .select('id')
-    .eq('whatsapp', whatsappDigits)
-    .single()
+    .or(`whatsapp.eq.${whatsDigits},cnpj_cpf.eq.${docDigits}`)
+    .maybeSingle()
 
   if (existente) {
-    return NextResponse.json({ error: 'WhatsApp já cadastrado.' }, { status: 409 })
+    return NextResponse.json(
+      { error: 'WhatsApp ou documento já cadastrado para outro fornecedor.' },
+      { status: 409 },
+    )
   }
 
-  // Salva no Supabase
-  const { data, error } = await sb.from('ecouni_fornecedores').insert({
-    nome,
-    whatsapp: whatsappDigits,
-    municipio,
-    uf: uf.toUpperCase(),
-    ativo: true,
-  }).select().single()
+  // Cria contato no Bling
+  let bling_fornecedor_id: string | null = null
+  try {
+    const blingBody: Record<string, unknown> = {
+      nome,
+      numeroDocumento: docDigits,
+      celular: whatsDigits,
+      tipo: isCNPJ ? 'J' : 'F',
+      situacao: 'A',
+    }
+    if (email) blingBody.email = email
+
+    const blingRes = await blingPost('/contatos', blingBody)
+    bling_fornecedor_id = String(blingRes?.data?.id ?? '')
+  } catch (e) {
+    console.error('Bling contato error:', e)
+  }
+
+  const { data, error } = await sb
+    .from('ecouni_fornecedores')
+    .insert({
+      nome,
+      cnpj_cpf: docDigits,
+      whatsapp: whatsDigits,
+      contato_nome,
+      email:              email || null,
+      municipio,
+      uf:                 uf.toUpperCase(),
+      inscricao_estadual: inscricao_estadual || null,
+      numero_caf:         numero_caf || null,
+      tipos_produto:      tipos_produto,
+      bling_fornecedor_id,
+      ativo: true,
+    })
+    .select()
+    .single()
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

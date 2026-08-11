@@ -54,9 +54,15 @@ export interface Preco {
 export interface Fornecedor {
   id: string
   nome: string
+  cnpj_cpf: string | null
   whatsapp: string
+  contato_nome: string | null
+  email: string | null
   municipio: string | null
   uf: string | null
+  tipos_produto: string[] | null
+  inscricao_estadual: string | null
+  numero_caf: string | null
   bling_fornecedor_id: string | null
   distancia_ceagesp_km: number | null
   token_portal: string | null
@@ -128,7 +134,7 @@ export interface Grupo {
   municipio: string | null
   contato_nome: string | null
   contato_whatsapp: string | null
-  bling_cliente_id: string | null
+  contato_email: string | null
   dias_pedido: string[] | null
   horario_pedido_limite: string | null
   dia_retirada: string | null
@@ -136,6 +142,8 @@ export interface Grupo {
   horario_retirada_fim: string | null
   pedido_minimo: number | null
   tempo_montagem_min: number
+  status_formacao: 'em_formacao' | 'formado'
+  qtd_participantes_estimada: number | null
   ativo: boolean
   created_at: string
 }
@@ -146,6 +154,7 @@ export interface Participante {
   nome: string
   whatsapp: string
   cpf: string | null
+  email: string | null
   bling_cliente_id: string | null
   stripe_customer_id: string | null
   stripe_subscription_id: string | null

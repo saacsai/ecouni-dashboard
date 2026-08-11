@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase'
 import { blingPost } from '@/lib/bling'
 
 export async function POST(req: NextRequest) {
-  const { nome, cpf, whatsapp, grupo_id } = await req.json()
+  const { nome, cpf, whatsapp, email, grupo_id } = await req.json()
 
   if (!nome || !cpf || !whatsapp || !grupo_id) {
     return NextResponse.json({ error: 'Campos obrigatórios: nome, cpf, whatsapp, grupo_id' }, { status: 400 })
@@ -25,13 +25,15 @@ export async function POST(req: NextRequest) {
   // Cria contato no Bling
   let bling_cliente_id: string | null = null
   try {
-    const blingRes = await blingPost('/contatos', {
+    const blingBody: Record<string, unknown> = {
       nome,
       numeroDocumento: cpf.replace(/\D/g, ''),
       celular: whatsapp.replace(/\D/g, ''),
       tipo: 'F',
       situacao: 'A',
-    })
+    }
+    if (email) blingBody.email = email
+    const blingRes = await blingPost('/contatos', blingBody)
     bling_cliente_id = String(blingRes?.data?.id ?? '')
   } catch (e) {
     console.error('Bling contato error:', e)
@@ -42,6 +44,7 @@ export async function POST(req: NextRequest) {
     nome,
     cpf: cpf.replace(/\D/g, ''),
     whatsapp: whatsapp.replace(/\D/g, ''),
+    email: email || null,
     grupo_id,
     bling_cliente_id,
     ativo: true,
