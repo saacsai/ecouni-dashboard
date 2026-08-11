@@ -49,7 +49,7 @@ const NAV: NavSection[] = [
       { label: 'Produtos',          href: '/dashboard/produtos',        icon: '🥦', perfis: ['admin','gestor'] },
       { label: 'Fornecedores',      href: '/dashboard/fornecedores',    icon: '🤝', perfis: ['admin','gestor'] },
       { label: 'Grupos',            href: '/dashboard/grupos',          icon: '🏢', perfis: ['admin','gestor'] },
-      { label: 'Funcionários',      href: '/dashboard/funcionarios',    icon: '👤', perfis: ['admin','gestor','analista'] },
+      { label: 'Participantes',     href: '/dashboard/participantes',   icon: '👥', perfis: ['admin','gestor','analista'] },
     ],
   },
   {

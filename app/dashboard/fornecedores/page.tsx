@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getSupabase } from '@/lib/supabase'
-import type { Fornecedor } from '@/lib/supabase'
+import type { Fornecedor, Produto, FornecedorProduto } from '@/lib/supabase'
 
 const PRIMARY = '#1B5E37'
 
@@ -11,14 +11,23 @@ const EMPTY: Omit<Fornecedor, 'id' | 'created_at'> = {
   distancia_ceagesp_km: null, token_portal: null, ativo: true,
 }
 
+type FornecedorProdutoComProduto = FornecedorProduto & { ecouni_produtos: Pick<Produto, 'id' | 'nome' | 'unidade'> | null }
+
 export default function FornecedoresPage() {
-  const [lista,    setLista]    = useState<Fornecedor[]>([])
-  const [loading,  setLoading]  = useState(true)
-  const [busca,    setBusca]    = useState('')
-  const [drawer,   setDrawer]   = useState(false)
-  const [form,     setForm]     = useState({ ...EMPTY })
-  const [editId,   setEditId]   = useState<string | null>(null)
-  const [saving,   setSaving]   = useState(false)
+  const [lista,          setLista]          = useState<Fornecedor[]>([])
+  const [loading,        setLoading]        = useState(true)
+  const [busca,          setBusca]          = useState('')
+  const [drawer,         setDrawer]         = useState(false)
+  const [form,           setForm]           = useState({ ...EMPTY })
+  const [editId,         setEditId]         = useState<string | null>(null)
+  const [saving,         setSaving]         = useState(false)
+
+  // Produtos vinculados
+  const [todosOsProdutos,      setTodosOsProdutos]      = useState<Pick<Produto, 'id' | 'nome' | 'unidade'>[]>([])
+  const [produtosVinculados,   setProdutosVinculados]   = useState<FornecedorProdutoComProduto[]>([])
+  const [produtoSelecionado,   setProdutoSelecionado]   = useState('')
+  const [vinculando,           setVinculando]           = useState(false)
+  const [removendoId,          setRemovendoId]          = useState<string | null>(null)
 
   async function carregar() {
     const { data } = await getSupabase()
@@ -29,11 +38,36 @@ export default function FornecedoresPage() {
     setLoading(false)
   }
 
-  useEffect(() => { carregar() }, [])
+  async function carregarProdutos() {
+    const { data } = await getSupabase()
+      .from('ecouni_produtos')
+      .select('id, nome, unidade')
+      .order('nome')
+    setTodosOsProdutos(data || [])
+  }
+
+  async function carregarProdutosVinculados(fornecedorId: string) {
+    const { data } = await getSupabase()
+      .from('ecouni_fornecedor_produtos')
+      .select('*, ecouni_produtos(id, nome, unidade)')
+      .eq('fornecedor_id', fornecedorId)
+      .order('created_at')
+    setProdutosVinculados((data as FornecedorProdutoComProduto[]) || [])
+  }
+
+  useEffect(() => { carregar(); carregarProdutos() }, [])
 
   function abrir(f?: Fornecedor) {
-    if (f) { setForm({ ...f }); setEditId(f.id) }
-    else   { setForm({ ...EMPTY }); setEditId(null) }
+    if (f) {
+      setForm({ ...f })
+      setEditId(f.id)
+      carregarProdutosVinculados(f.id)
+    } else {
+      setForm({ ...EMPTY })
+      setEditId(null)
+      setProdutosVinculados([])
+    }
+    setProdutoSelecionado('')
     setDrawer(true)
   }
 
@@ -64,10 +98,35 @@ export default function FornecedoresPage() {
     carregar()
   }
 
+  async function vincularProduto() {
+    if (!produtoSelecionado || !editId) return
+    setVinculando(true)
+    await getSupabase().from('ecouni_fornecedor_produtos').insert({
+      fornecedor_id: editId,
+      produto_id: produtoSelecionado,
+      ativo: true,
+    })
+    setProdutoSelecionado('')
+    await carregarProdutosVinculados(editId)
+    setVinculando(false)
+  }
+
+  async function removerProduto(fpId: string) {
+    if (!editId) return
+    setRemovendoId(fpId)
+    await getSupabase().from('ecouni_fornecedor_produtos').delete().eq('id', fpId)
+    await carregarProdutosVinculados(editId)
+    setRemovendoId(null)
+  }
+
   const filtrados = lista.filter(f =>
     f.nome.toLowerCase().includes(busca.toLowerCase()) ||
     (f.municipio || '').toLowerCase().includes(busca.toLowerCase())
   )
+
+  // Produtos ainda não vinculados a este fornecedor
+  const vinculadosIds = new Set(produtosVinculados.map(pv => pv.produto_id))
+  const produtosDisponiveis = todosOsProdutos.filter(p => !vinculadosIds.has(p.id))
 
   return (
     <div>
@@ -181,6 +240,69 @@ export default function FornecedoresPage() {
                   onChange={e => setForm(p => ({ ...p, ativo: e.target.checked }))} />
                 <label htmlFor="ativo" className="text-sm text-gray-600">Ativo</label>
               </div>
+
+              {/* ── Produtos vinculados (somente ao editar) ── */}
+              {editId && (
+                <div className="pt-2">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex-1 h-px bg-gray-100" />
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">
+                      Produtos vinculados
+                    </span>
+                    <div className="flex-1 h-px bg-gray-100" />
+                  </div>
+
+                  {/* Lista de produtos vinculados */}
+                  {produtosVinculados.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-3">Nenhum produto vinculado ainda.</p>
+                  ) : (
+                    <ul className="space-y-1.5 mb-3">
+                      {produtosVinculados.map(pv => (
+                        <li key={pv.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                          <span className="text-sm text-gray-800">
+                            {pv.ecouni_produtos?.nome ?? pv.produto_id}
+                            {pv.ecouni_produtos?.unidade && (
+                              <span className="text-xs text-gray-400 ml-1">({pv.ecouni_produtos.unidade})</span>
+                            )}
+                          </span>
+                          <button
+                            onClick={() => removerProduto(pv.id)}
+                            disabled={removendoId === pv.id}
+                            className="text-gray-300 hover:text-red-400 transition-colors text-xs px-1 disabled:opacity-40"
+                            title="Remover produto"
+                          >
+                            ✕
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {/* Adicionar produto */}
+                  {produtosDisponiveis.length > 0 && (
+                    <div className="flex gap-2">
+                      <select
+                        value={produtoSelecionado}
+                        onChange={e => setProdutoSelecionado(e.target.value)}
+                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37] bg-white"
+                      >
+                        <option value="">Selecionar produto…</option>
+                        {produtosDisponiveis.map(p => (
+                          <option key={p.id} value={p.id}>{p.nome}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={vincularProduto}
+                        disabled={!produtoSelecionado || vinculando}
+                        className="px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-40 whitespace-nowrap"
+                        style={{ background: PRIMARY }}
+                      >
+                        {vinculando ? '…' : '+ Vincular'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="px-6 py-4 border-t border-gray-100">
               <button onClick={salvar} disabled={saving || !form.nome || !form.whatsapp}

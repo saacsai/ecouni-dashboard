@@ -6,6 +6,23 @@ import type { Grupo } from '@/lib/supabase'
 
 const PRIMARY = '#1B5E37'
 
+const DIAS_SEMANA = [
+  { value: 'segunda',  label: 'Segunda' },
+  { value: 'terca',    label: 'Terça' },
+  { value: 'quarta',   label: 'Quarta' },
+  { value: 'quinta',   label: 'Quinta' },
+  { value: 'sexta',    label: 'Sexta' },
+]
+
+const DIAS_RETIRADA = [
+  { value: 'segunda',  label: 'Segunda' },
+  { value: 'terca',    label: 'Terça' },
+  { value: 'quarta',   label: 'Quarta' },
+  { value: 'quinta',   label: 'Quinta' },
+  { value: 'sexta',    label: 'Sexta' },
+  { value: 'sabado',   label: 'Sábado' },
+]
+
 const EMPTY: Omit<Grupo, 'id' | 'created_at'> = {
   nome: '', endereco_entrega: '', municipio: '', contato_nome: '',
   contato_whatsapp: '', bling_cliente_id: null, ativo: true,
@@ -36,6 +53,16 @@ export default function GruposPage() {
     setDrawer(true)
   }
 
+  function toggleDiaPedido(dia: string) {
+    setForm(p => {
+      const atual = p.dias_pedido ?? []
+      const novo = atual.includes(dia)
+        ? atual.filter(d => d !== dia)
+        : [...atual, dia]
+      return { ...p, dias_pedido: novo.length > 0 ? novo : null }
+    })
+  }
+
   async function salvar() {
     setSaving(true)
     const payload = {
@@ -46,6 +73,14 @@ export default function GruposPage() {
       contato_whatsapp: form.contato_whatsapp || null,
       bling_cliente_id: form.bling_cliente_id || null,
       ativo: form.ativo,
+      // Regras de operação
+      dias_pedido: form.dias_pedido,
+      horario_pedido_limite: form.horario_pedido_limite || null,
+      dia_retirada: form.dia_retirada || null,
+      horario_retirada_inicio: form.horario_retirada_inicio || null,
+      horario_retirada_fim: form.horario_retirada_fim || null,
+      pedido_minimo: form.pedido_minimo || null,
+      tempo_montagem_min: form.tempo_montagem_min ?? 15,
     }
     if (editId) {
       await getSupabase().from('ecouni_grupos').update(payload).eq('id', editId)
@@ -111,6 +146,13 @@ export default function GruposPage() {
               {g.contato_nome && (
                 <p className="text-xs text-gray-500">👤 {g.contato_nome}{g.contato_whatsapp ? ` · ${g.contato_whatsapp}` : ''}</p>
               )}
+              {g.dia_retirada && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Retirada: {DIAS_RETIRADA.find(d => d.value === g.dia_retirada)?.label ?? g.dia_retirada}
+                  {g.horario_retirada_inicio && ` ${g.horario_retirada_inicio}`}
+                  {g.horario_retirada_fim && `–${g.horario_retirada_fim}`}
+                </p>
+              )}
               <button onClick={() => abrir(g)}
                 className="mt-3 text-xs text-gray-400 hover:text-gray-700">
                 Editar
@@ -129,6 +171,7 @@ export default function GruposPage() {
               <button onClick={() => setDrawer(false)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+              {/* ── Campos básicos ── */}
               {campos.map(c => (
                 <div key={c.key}>
                   <label className="block text-xs font-medium text-gray-600 mb-1">{c.label}</label>
@@ -144,6 +187,116 @@ export default function GruposPage() {
                 <input type="checkbox" id="ativo" checked={form.ativo}
                   onChange={e => setForm(p => ({ ...p, ativo: e.target.checked }))} />
                 <label htmlFor="ativo" className="text-sm text-gray-600">Ativo</label>
+              </div>
+
+              {/* ── Regras de operação ── */}
+              <div className="pt-2">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-1 h-px bg-gray-100" />
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">
+                    Regras de operação
+                  </span>
+                  <div className="flex-1 h-px bg-gray-100" />
+                </div>
+
+                {/* Dias para pedido */}
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Dias para pedido</label>
+                  <div className="flex flex-wrap gap-2">
+                    {DIAS_SEMANA.map(d => {
+                      const checked = (form.dias_pedido ?? []).includes(d.value)
+                      return (
+                        <button
+                          key={d.value}
+                          type="button"
+                          onClick={() => toggleDiaPedido(d.value)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                            checked
+                              ? 'border-[#1B5E37] bg-[#1B5E37] text-white'
+                              : 'border-gray-200 text-gray-500 hover:border-gray-400'
+                          }`}
+                        >
+                          {d.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Horário limite do pedido */}
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Horário limite do pedido</label>
+                  <input
+                    type="time"
+                    value={form.horario_pedido_limite ?? ''}
+                    onChange={e => setForm(p => ({ ...p, horario_pedido_limite: e.target.value || null }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
+                  />
+                </div>
+
+                {/* Dia de retirada */}
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Dia de retirada</label>
+                  <select
+                    value={form.dia_retirada ?? ''}
+                    onChange={e => setForm(p => ({ ...p, dia_retirada: e.target.value || null }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37] bg-white"
+                  >
+                    <option value="">Selecionar…</option>
+                    {DIAS_RETIRADA.map(d => (
+                      <option key={d.value} value={d.value}>{d.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Horários de retirada */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Início da retirada</label>
+                    <input
+                      type="time"
+                      value={form.horario_retirada_inicio ?? ''}
+                      onChange={e => setForm(p => ({ ...p, horario_retirada_inicio: e.target.value || null }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Fim da retirada</label>
+                    <input
+                      type="time"
+                      value={form.horario_retirada_fim ?? ''}
+                      onChange={e => setForm(p => ({ ...p, horario_retirada_fim: e.target.value || null }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
+                    />
+                  </div>
+                </div>
+
+                {/* Pedido mínimo */}
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Pedido mínimo (R$)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={form.pedido_minimo ?? ''}
+                    onChange={e => setForm(p => ({ ...p, pedido_minimo: e.target.value ? Number(e.target.value) : null }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
+                    placeholder="Ex: 30.00"
+                  />
+                </div>
+
+                {/* Tempo de montagem */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Tempo médio de montagem (min)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.tempo_montagem_min ?? 15}
+                    onChange={e => setForm(p => ({ ...p, tempo_montagem_min: e.target.value ? Number(e.target.value) : 15 }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
+                    placeholder="15"
+                  />
+                </div>
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-100">
