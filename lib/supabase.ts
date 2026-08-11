@@ -35,6 +35,9 @@ export interface Produto {
   tipo_estoque: TipoEstoque
   unidade: string
   itens_por_unidade: number | null
+  gramas_ref_min: number | null
+  gramas_ref_max: number | null
+  link_saiba_mais: string | null
   bling_produto_id: string | null
   disponivel: boolean
   created_at: string
@@ -56,8 +59,20 @@ export interface Fornecedor {
   uf: string | null
   bling_fornecedor_id: string | null
   distancia_ceagesp_km: number | null
+  token_portal: string | null
   ativo: boolean
   created_at: string
+}
+
+export interface FornecedorProduto {
+  id: string
+  fornecedor_id: string
+  produto_id: string
+  ativo: boolean
+  created_at: string
+  // joins
+  ecouni_produtos?: Produto
+  ecouni_fornecedores?: Fornecedor
 }
 
 export interface Disponibilidade {
@@ -114,6 +129,13 @@ export interface Grupo {
   contato_nome: string | null
   contato_whatsapp: string | null
   bling_cliente_id: string | null
+  dias_pedido: string[] | null
+  horario_pedido_limite: string | null
+  dia_retirada: string | null
+  horario_retirada_inicio: string | null
+  horario_retirada_fim: string | null
+  pedido_minimo: number | null
+  tempo_montagem_min: number
   ativo: boolean
   created_at: string
 }
@@ -125,6 +147,10 @@ export interface Participante {
   whatsapp: string
   cpf: string | null
   bling_cliente_id: string | null
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  assinante: boolean
+  token_portal: string | null
   preferencias_nunca: string[]
   ativo: boolean
   created_at: string

@@ -8,7 +8,7 @@ const PRIMARY = '#1B5E37'
 
 const EMPTY: Omit<Fornecedor, 'id' | 'created_at'> = {
   nome: '', whatsapp: '', municipio: '', uf: '', bling_fornecedor_id: null,
-  distancia_ceagesp_km: null, ativo: true,
+  distancia_ceagesp_km: null, token_portal: null, ativo: true,
 }
 
 export default function FornecedoresPage() {
