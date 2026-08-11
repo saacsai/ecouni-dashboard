@@ -6,20 +6,28 @@ import type { Produto, CategoriaProduto, TipoEstoque } from '@/lib/supabase'
 
 const PRIMARY = '#1B5E37'
 
-const CATEGORIAS: CategoriaProduto[] = ['folhosa', 'legume', 'fruta', 'grao', 'processado', 'outro']
+const CATEGORIAS: CategoriaProduto[] = ['folhosa', 'legume', 'fruta', 'grao', 'granjeiro', 'min_processado', 'processado', 'outro']
 const TIPOS: TipoEstoque[] = ['prospectivo', 'fisico']
 
 const CAT_LABEL: Record<CategoriaProduto, string> = {
-  folhosa: 'Folhosa', legume: 'Legume', fruta: 'Fruta',
-  grao: 'Grão', processado: 'Processado', outro: 'Outro',
+  folhosa:        'Verduras',
+  legume:         'Legumes',
+  fruta:          'Frutas',
+  grao:           'Cereais',
+  granjeiro:      'Granjeiros',
+  min_processado: 'Min. Processados',
+  processado:     'Processados',
+  outro:          'Outros',
 }
 const CAT_BADGE: Record<CategoriaProduto, string> = {
-  folhosa:    'bg-green-100 text-green-700',
-  legume:     'bg-orange-100 text-orange-700',
-  fruta:      'bg-pink-100 text-pink-700',
-  grao:       'bg-yellow-100 text-yellow-700',
-  processado: 'bg-blue-100 text-blue-700',
-  outro:      'bg-gray-100 text-gray-500',
+  folhosa:        'bg-green-100 text-green-700',
+  legume:         'bg-orange-100 text-orange-700',
+  fruta:          'bg-pink-100 text-pink-700',
+  grao:           'bg-yellow-100 text-yellow-700',
+  granjeiro:      'bg-amber-100 text-amber-700',
+  min_processado: 'bg-teal-100 text-teal-700',
+  processado:     'bg-blue-100 text-blue-700',
+  outro:          'bg-gray-100 text-gray-500',
 }
 
 const EMPTY = {
