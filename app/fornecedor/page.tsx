@@ -5,7 +5,8 @@ import { useState } from 'react'
 const PRIMARY = '#1B5E37'
 
 const TIPOS_PRODUTO = [
-  'Frutas', 'Verduras', 'Legumes', 'Cereais', 'Granjeiros', 'Processados', 'Outros',
+  'Frutas', 'Verduras', 'Legumes', 'Cereais', 'Granjeiros',
+  'Minimamente Processados', 'Processados', 'Outros',
 ]
 
 function fmtDoc(v: string) {
