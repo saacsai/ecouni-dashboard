@@ -41,6 +41,7 @@ export default function GrupoPage() {
     contato_email: '',
     status_formacao: '' as '' | 'em_formacao' | 'formado',
     qtd_participantes_estimada: '',
+    acesso_restrito: false,
   })
 
   function set<K extends keyof typeof form>(key: K, val: string) {
@@ -345,6 +346,38 @@ export default function GrupoPage() {
                 />
               </div>
             )}
+
+            {/* Acesso ao grupo */}
+            <div>
+              <label className={labelCls}>Quem pode participar? *</label>
+              <div className="space-y-2 mt-1">
+                {[
+                  { value: false, label: 'Grupo aberto', desc: 'Qualquer pessoa pode se cadastrar sem autorização' },
+                  { value: true,  label: 'Requer autorização', desc: 'O responsável aprova cada novo participante' },
+                ].map(opt => (
+                  <label
+                    key={String(opt.value)}
+                    className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      form.acesso_restrito === opt.value
+                        ? 'border-[#1B5E37] bg-[#F2F7F4]'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="acesso_restrito"
+                      checked={form.acesso_restrito === opt.value}
+                      onChange={() => setForm(p => ({ ...p, acesso_restrito: opt.value }))}
+                      className="mt-0.5 accent-[#1B5E37]"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{opt.label}</p>
+                      <p className="text-xs text-gray-400">{opt.desc}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
 
             {erro && <p className="text-xs text-red-500">{erro}</p>}
 

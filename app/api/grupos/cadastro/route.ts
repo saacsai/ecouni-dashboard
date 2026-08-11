@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
     contato_email,
     status_formacao,
     qtd_participantes_estimada,
+    acesso_restrito,
   } = body
 
   // Required fields validation
@@ -74,6 +75,7 @@ export async function POST(req: NextRequest) {
         status_formacao === 'formado' && qtd_participantes_estimada
           ? Number(qtd_participantes_estimada)
           : null,
+      acesso_restrito: acesso_restrito === true,
       ativo: false,
     })
     .select()

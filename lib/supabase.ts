@@ -144,6 +144,7 @@ export interface Grupo {
   tempo_montagem_min: number
   status_formacao: 'em_formacao' | 'formado'
   qtd_participantes_estimada: number | null
+  acesso_restrito: boolean
   ativo: boolean
   created_at: string
 }

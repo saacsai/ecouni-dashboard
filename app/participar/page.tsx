@@ -22,7 +22,7 @@ function fmtWhats(v: string) {
 type Etapa = 'form' | 'sucesso'
 
 export default function ParticiparPage() {
-  const [grupos,  setGrupos]  = useState<Pick<Grupo, 'id' | 'nome'>[]>([])
+  const [grupos,  setGrupos]  = useState<Pick<Grupo, 'id' | 'nome' | 'municipio' | 'acesso_restrito'>[]>([])
   const [etapa,   setEtapa]   = useState<Etapa>('form')
   const [saving,  setSaving]  = useState(false)
   const [erro,    setErro]    = useState('')
@@ -33,7 +33,7 @@ export default function ParticiparPage() {
   useEffect(() => {
     getSupabase()
       .from('ecouni_grupos')
-      .select('id, nome')
+      .select('id, nome, municipio, acesso_restrito')
       .eq('ativo', true)
       .order('nome')
       .then(({ data }) => setGrupos(data || []))
@@ -160,11 +160,18 @@ export default function ParticiparPage() {
               >
                 <option value="">Selecione seu grupo…</option>
                 {grupos.map(g => (
-                  <option key={g.id} value={g.id}>{g.nome}</option>
+                  <option key={g.id} value={g.id}>
+                    {g.nome}{g.municipio ? ` / ${g.municipio}` : ''}
+                  </option>
                 ))}
               </select>
               {grupos.length === 0 && (
                 <p className="text-xs text-gray-400 mt-1">Nenhum grupo disponível no momento.</p>
+              )}
+              {form.grupo_id && grupos.find(g => g.id === form.grupo_id)?.acesso_restrito && (
+                <p className="text-xs text-amber-600 mt-1">
+                  Este grupo requer autorização do responsável. Seu cadastro ficará pendente até aprovação.
+                </p>
               )}
             </div>
 
