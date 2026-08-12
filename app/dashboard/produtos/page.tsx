@@ -30,9 +30,20 @@ const CAT_BADGE: Record<CategoriaProduto, string> = {
   outro:          'bg-gray-100 text-gray-500',
 }
 
+const UNIDADES = [
+  { value: 'UN',  label: 'UN — Unidade (tomate, manga, pimentão)' },
+  { value: 'DZ',  label: 'DZ — Dúzia (banana, ovo)' },
+  { value: 'MÇ',  label: 'MÇ — Maço (couve, cheiro-verde)' },
+  { value: 'PCT', label: 'PCT — Pacote (grãos embalados)' },
+  { value: 'CX',  label: 'CX — Caixa (processados)' },
+  { value: 'PC',  label: 'PC — Peça (abóbora, melancia inteira)' },
+]
+
 const EMPTY = {
   nome: '', categoria: 'folhosa' as CategoriaProduto, tipo_estoque: 'prospectivo' as TipoEstoque,
-  unidade: 'cx', itens_por_unidade: null as number | null,
+  unidade: 'UN', itens_por_unidade: null as number | null,
+  gramas_ref_min: null as number | null, gramas_ref_max: null as number | null,
+  link_saiba_mais: '' as string | null,
   bling_produto_id: '' as string | null, disponivel: true,
 }
 
@@ -55,21 +66,36 @@ export default function ProdutosPage() {
   useEffect(() => { carregar() }, [])
 
   function abrir(p?: Produto) {
-    if (p) { setForm({ ...p, itens_por_unidade: p.itens_por_unidade ?? null, bling_produto_id: p.bling_produto_id ?? '' }); setEditId(p.id) }
-    else   { setForm({ ...EMPTY }); setEditId(null) }
+    if (p) {
+      setForm({
+        ...p,
+        itens_por_unidade: p.itens_por_unidade ?? null,
+        gramas_ref_min:    p.gramas_ref_min ?? null,
+        gramas_ref_max:    p.gramas_ref_max ?? null,
+        link_saiba_mais:   p.link_saiba_mais ?? '',
+        bling_produto_id:  p.bling_produto_id ?? '',
+      })
+      setEditId(p.id)
+    } else {
+      setForm({ ...EMPTY })
+      setEditId(null)
+    }
     setDrawer(true)
   }
 
   async function salvar() {
     setSaving(true)
     const payload = {
-      nome: form.nome,
-      categoria: form.categoria,
-      tipo_estoque: form.tipo_estoque,
-      unidade: form.unidade,
+      nome:              form.nome,
+      categoria:         form.categoria,
+      tipo_estoque:      form.tipo_estoque,
+      unidade:           form.unidade,
       itens_por_unidade: form.itens_por_unidade ? Number(form.itens_por_unidade) : null,
-      bling_produto_id: form.bling_produto_id || null,
-      disponivel: form.disponivel,
+      gramas_ref_min:    form.gramas_ref_min ? Number(form.gramas_ref_min) : null,
+      gramas_ref_max:    form.gramas_ref_max ? Number(form.gramas_ref_max) : null,
+      link_saiba_mais:   form.link_saiba_mais || null,
+      bling_produto_id:  form.bling_produto_id || null,
+      disponivel:        form.disponivel,
     }
     if (editId) {
       await getSupabase().from('ecouni_produtos').update(payload).eq('id', editId)
@@ -162,7 +188,9 @@ export default function ProdutosPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs hidden md:table-cell capitalize">{p.tipo_estoque}</td>
                   <td className="px-4 py-3 text-gray-500 text-xs hidden md:table-cell">
-                    {p.unidade}{p.itens_por_unidade ? ` (${p.itens_por_unidade} un/cx)` : ''}
+                    {p.unidade}
+                    {p.gramas_ref_min && p.gramas_ref_max ? ` · ${p.gramas_ref_min}–${p.gramas_ref_max}g` : ''}
+                    {p.itens_por_unidade ? ` (${p.itens_por_unidade}/cx)` : ''}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <button onClick={() => toggleDisponivel(p)}
@@ -219,22 +247,43 @@ export default function ProdutosPage() {
                   <option value="fisico">Físico (processado — palete no galpão)</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Unidade de venda *</label>
+                <select value={form.unidade}
+                  onChange={e => setForm(p => ({ ...p, unidade: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37] bg-white">
+                  {UNIDADES.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
+                </select>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Unidade</label>
-                  <select value={form.unidade}
-                    onChange={e => setForm(p => ({ ...p, unidade: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37] bg-white">
-                    {['cx', 'pacote', 'kg', 'unidade'].map(u => <option key={u} value={u}>{u}</option>)}
-                  </select>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Gramagem mín (g)</label>
+                  <input type="number" value={form.gramas_ref_min ?? ''}
+                    onChange={e => setForm(p => ({ ...p, gramas_ref_min: e.target.value ? Number(e.target.value) : null }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
+                    placeholder="Ex: 60" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Itens por caixa</label>
-                  <input type="number" value={form.itens_por_unidade ?? ''}
-                    onChange={e => setForm(p => ({ ...p, itens_por_unidade: e.target.value ? Number(e.target.value) : null }))}
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Gramagem máx (g)</label>
+                  <input type="number" value={form.gramas_ref_max ?? ''}
+                    onChange={e => setForm(p => ({ ...p, gramas_ref_max: e.target.value ? Number(e.target.value) : null }))}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
-                    placeholder="Ex: 10" />
+                    placeholder="Ex: 80" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Link "Saiba mais" (Instagram, vídeo…)</label>
+                <input type="url" value={form.link_saiba_mais ?? ''}
+                  onChange={e => setForm(p => ({ ...p, link_saiba_mais: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
+                  placeholder="https://instagram.com/..." />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Itens por caixa</label>
+                <input type="number" value={form.itens_por_unidade ?? ''}
+                  onChange={e => setForm(p => ({ ...p, itens_por_unidade: e.target.value ? Number(e.target.value) : null }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
+                  placeholder="Ex: 10" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">ID Bling (produto)</label>
