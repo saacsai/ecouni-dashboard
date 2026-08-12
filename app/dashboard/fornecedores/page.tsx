@@ -28,8 +28,11 @@ export default function FornecedoresPage() {
   const [todosOsProdutos,      setTodosOsProdutos]      = useState<Pick<Produto, 'id' | 'nome' | 'unidade'>[]>([])
   const [produtosVinculados,   setProdutosVinculados]   = useState<FornecedorProdutoComProduto[]>([])
   const [produtoSelecionado,   setProdutoSelecionado]   = useState('')
+  const [prazoDias,            setPrazoDias]            = useState(1)
+  const [observacaoPrazo,      setObservacaoPrazo]      = useState('')
   const [vinculando,           setVinculando]           = useState(false)
   const [removendoId,          setRemovendoId]          = useState<string | null>(null)
+  const [tokenCopiado,         setTokenCopiado]         = useState(false)
 
   async function carregar() {
     const { data } = await getSupabase()
@@ -70,13 +73,16 @@ export default function FornecedoresPage() {
       setProdutosVinculados([])
     }
     setProdutoSelecionado('')
+    setPrazoDias(1)
+    setObservacaoPrazo('')
+    setTokenCopiado(false)
     setDrawer(true)
   }
 
   async function salvar() {
     setSaving(true)
     const sb = getSupabase()
-    const payload = {
+    const payload: Record<string, unknown> = {
       nome: form.nome,
       whatsapp: form.whatsapp,
       municipio: form.municipio || null,
@@ -88,6 +94,7 @@ export default function FornecedoresPage() {
     if (editId) {
       await sb.from('ecouni_fornecedores').update(payload).eq('id', editId)
     } else {
+      payload.token_portal = crypto.randomUUID()
       await sb.from('ecouni_fornecedores').insert(payload)
     }
     await carregar()
@@ -106,9 +113,13 @@ export default function FornecedoresPage() {
     await getSupabase().from('ecouni_fornecedor_produtos').insert({
       fornecedor_id: editId,
       produto_id: produtoSelecionado,
+      prazo_pedido_dias: prazoDias,
+      observacao_prazo: observacaoPrazo || null,
       ativo: true,
     })
     setProdutoSelecionado('')
+    setPrazoDias(1)
+    setObservacaoPrazo('')
     await carregarProdutosVinculados(editId)
     setVinculando(false)
   }
@@ -243,6 +254,30 @@ export default function FornecedoresPage() {
                 <label htmlFor="ativo" className="text-sm text-gray-600">Ativo</label>
               </div>
 
+              {/* ── Token portal ── */}
+              {editId && form.token_portal && (
+                <div className="pt-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Link de disponibilidade (MIA envia este link)</label>
+                  <div className="flex gap-2">
+                    <input
+                      readOnly
+                      value={`${typeof window !== 'undefined' ? window.location.origin : ''}/disponibilidade/${form.token_portal}`}
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-500 bg-gray-50 outline-none font-mono"
+                    />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/disponibilidade/${form.token_portal}`)
+                        setTokenCopiado(true)
+                        setTimeout(() => setTokenCopiado(false), 2000)
+                      }}
+                      className="px-3 py-2 rounded-lg text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 whitespace-nowrap"
+                    >
+                      {tokenCopiado ? '✓ Copiado' : 'Copiar'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* ── Produtos vinculados (somente ao editar) ── */}
               {editId && (
                 <div className="pt-2">
@@ -260,21 +295,27 @@ export default function FornecedoresPage() {
                   ) : (
                     <ul className="space-y-1.5 mb-3">
                       {produtosVinculados.map(pv => (
-                        <li key={pv.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                          <span className="text-sm text-gray-800">
-                            {pv.ecouni_produtos?.nome ?? pv.produto_id}
-                            {pv.ecouni_produtos?.unidade && (
-                              <span className="text-xs text-gray-400 ml-1">({pv.ecouni_produtos.unidade})</span>
-                            )}
-                          </span>
-                          <button
-                            onClick={() => removerProduto(pv.id)}
-                            disabled={removendoId === pv.id}
-                            className="text-gray-300 hover:text-red-400 transition-colors text-xs px-1 disabled:opacity-40"
-                            title="Remover produto"
-                          >
-                            ✕
-                          </button>
+                        <li key={pv.id} className="bg-gray-50 rounded-lg px-3 py-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-800">
+                              {pv.ecouni_produtos?.nome ?? pv.produto_id}
+                              {pv.ecouni_produtos?.unidade && (
+                                <span className="text-xs text-gray-400 ml-1">({pv.ecouni_produtos.unidade})</span>
+                              )}
+                            </span>
+                            <button
+                              onClick={() => removerProduto(pv.id)}
+                              disabled={removendoId === pv.id}
+                              className="text-gray-300 hover:text-red-400 transition-colors text-xs px-1 disabled:opacity-40"
+                              title="Remover produto"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            Prazo: {pv.prazo_pedido_dias} dia{pv.prazo_pedido_dias !== 1 ? 's' : ''} antes da entrega
+                            {pv.observacao_prazo ? ` · ${pv.observacao_prazo}` : ''}
+                          </p>
                         </li>
                       ))}
                     </ul>
@@ -282,24 +323,46 @@ export default function FornecedoresPage() {
 
                   {/* Adicionar produto */}
                   {produtosDisponiveis.length > 0 && (
-                    <div className="flex gap-2">
+                    <div className="space-y-2">
                       <select
                         value={produtoSelecionado}
                         onChange={e => setProdutoSelecionado(e.target.value)}
-                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37] bg-white"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37] bg-white"
                       >
                         <option value="">Selecionar produto…</option>
                         {produtosDisponiveis.map(p => (
-                          <option key={p.id} value={p.id}>{p.nome}</option>
+                          <option key={p.id} value={p.id}>{p.nome} ({p.unidade})</option>
                         ))}
                       </select>
+                      {produtoSelecionado && (
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label className="block text-xs text-gray-500 mb-1">Prazo (dias antes da entrega)</label>
+                            <input
+                              type="number" min={1} max={30} value={prazoDias}
+                              onChange={e => setPrazoDias(Number(e.target.value))}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
+                              placeholder="Ex: 7"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-xs text-gray-500 mb-1">Obs. (opcional)</label>
+                            <input
+                              type="text" value={observacaoPrazo}
+                              onChange={e => setObservacaoPrazo(e.target.value)}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#1B5E37]"
+                              placeholder="Ex: climatização 3-4 dias"
+                            />
+                          </div>
+                        </div>
+                      )}
                       <button
                         onClick={vincularProduto}
                         disabled={!produtoSelecionado || vinculando}
-                        className="px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-40 whitespace-nowrap"
+                        className="w-full px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-40"
                         style={{ background: PRIMARY }}
                       >
-                        {vinculando ? '…' : '+ Vincular'}
+                        {vinculando ? '…' : '+ Vincular produto'}
                       </button>
                     </div>
                   )}

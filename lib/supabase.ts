@@ -74,6 +74,8 @@ export interface FornecedorProduto {
   id: string
   fornecedor_id: string
   produto_id: string
+  prazo_pedido_dias: number
+  observacao_prazo: string | null
   ativo: boolean
   created_at: string
   // joins

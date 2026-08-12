@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
       numero_caf:         numero_caf || null,
       tipos_produto:      tipos_produto,
       bling_fornecedor_id,
+      token_portal:       crypto.randomUUID(),
       ativo: true,
     })
     .select()
