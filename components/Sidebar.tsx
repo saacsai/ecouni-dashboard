@@ -2,10 +2,10 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { getSupabase } from '@/lib/supabase'
 import type { Perfil } from '@/lib/supabase'
-
-const PRIMARY = '#1B5E37'
+import { PRIMARY } from '@/lib/brand'
 
 interface NavItem {
   label: string
@@ -113,17 +113,15 @@ export default function Sidebar() {
         style={{ width: 256 }}
       >
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-gray-100 flex items-center gap-3">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-base font-bold flex-shrink-0"
-            style={{ background: PRIMARY }}
-          >
-            🌿
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900 leading-tight">EcoUni</p>
-            <p className="text-[10px] text-gray-400 leading-tight">Agricultura Familiar</p>
-          </div>
+        <div className="px-5 py-4 border-b border-gray-100">
+          <Image
+            src="/logo_ecouni.png"
+            alt="EcoUni"
+            width={148}
+            height={60}
+            className="object-contain"
+            priority
+          />
         </div>
 
         {/* Nav */}

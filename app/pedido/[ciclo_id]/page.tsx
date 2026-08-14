@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { getSupabase } from '@/lib/supabase'
-
-const PRIMARY = '#1B5E37'
+import { PRIMARY } from '@/lib/brand'
 
 const CATEGORIAS = [
   { key: 'fruta',          label: 'Frutas',                emoji: '🍎' },
@@ -202,20 +202,12 @@ export default function PedidoPage() {
       {/* Header fixo */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center gap-2.5 px-4 pt-3 pb-2">
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
-            style={{ background: PRIMARY }}
-          >
-            🌿
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900 leading-tight">Feira EcoUni</p>
-            {semana && (
-              <p className="text-[10px] text-gray-400">
-                Semana de {new Date(semana + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
-              </p>
-            )}
-          </div>
+          <Image src="/logo_ecouni.png" alt="EcoUni" width={88} height={36} className="object-contain flex-shrink-0" />
+          {semana && (
+            <p className="text-[10px] text-gray-400 ml-1">
+              Semana de {new Date(semana + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
+            </p>
+          )}
         </div>
 
         {/* Abas de categoria */}

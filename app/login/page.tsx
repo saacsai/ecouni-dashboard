@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { getSupabase } from '@/lib/supabase'
-
-const PRIMARY = '#1B5E37'
+import { PRIMARY } from '@/lib/brand'
 
 export default function LoginPage() {
   const [email,   setEmail]   = useState('')
@@ -44,15 +44,15 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F2F7F4] px-4">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div
-            className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold"
-            style={{ background: PRIMARY }}
-          >
-            🌿
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">EcoUni</h1>
-          <p className="text-sm text-gray-500 mt-1">Agricultura Familiar Solidária</p>
+        <div className="flex justify-center mb-8">
+          <Image
+            src="/logo_ecouni.png"
+            alt="EcoUni"
+            width={180}
+            height={72}
+            className="object-contain"
+            priority
+          />
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">

@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { getSupabase } from '@/lib/supabase'
 import type { Grupo } from '@/lib/supabase'
-
-const PRIMARY = '#1B5E37'
+import { PRIMARY } from '@/lib/brand'
 
 function fmtCPF(v: string) {
   return v.replace(/\D/g, '').slice(0, 11)
@@ -72,7 +72,7 @@ export default function ParticiparPage() {
     return (
       <div className="min-h-screen bg-[#F2F7F4] flex items-center justify-center px-4">
         <div className="w-full max-w-sm text-center">
-          <div className="text-6xl mb-4">🌿</div>
+          <Image src="/logo_ecouni.png" alt="EcoUni" width={160} height={64} className="object-contain mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Cadastro realizado!</h1>
           <p className="text-gray-500 text-sm mb-6">
             Bem-vindo(a) à Feira EcoUni, <strong>{form.nome.split(' ')[0]}</strong>!
@@ -94,14 +94,8 @@ export default function ParticiparPage() {
     <div className="min-h-screen bg-[#F2F7F4] flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div
-            className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl"
-            style={{ background: PRIMARY }}>
-            🌿
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">Feira EcoUni</h1>
-          <p className="text-sm text-gray-500 mt-1">Agricultura Familiar Solidária</p>
+        <div className="flex justify-center mb-8">
+          <Image src="/logo_ecouni.png" alt="EcoUni" width={180} height={72} className="object-contain" priority />
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-7">

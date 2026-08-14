@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-
-const PRIMARY = '#1B5E37'
+import Image from 'next/image'
+import { PRIMARY } from '@/lib/brand'
 
 const TIPOS_PRODUTO = [
   'Frutas', 'Verduras', 'Legumes', 'Cereais', 'Granjeiros',
@@ -146,14 +146,8 @@ export default function FornecedorPage() {
     <div className="min-h-screen bg-[#F2F7F4] flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div
-            className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl"
-            style={{ background: PRIMARY }}>
-            🌱
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">Feira EcoUni</h1>
-          <p className="text-sm text-gray-500 mt-1">Cadastro de Fornecedor</p>
+        <div className="flex justify-center mb-8">
+          <Image src="/logo_ecouni.png" alt="EcoUni" width={180} height={72} className="object-contain" priority />
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-7">

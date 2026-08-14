@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-
-const PRIMARY = '#1B5E37'
+import Image from 'next/image'
+import { PRIMARY } from '@/lib/brand'
 
 type ProdutoVinculado = {
   id: string
@@ -155,13 +155,11 @@ export default function DisponibilidadePage() {
     <div className="min-h-screen bg-[#F2F7F4] pb-24">
 
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 shadow-sm px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style={{ background: PRIMARY }}>
-            🌿
-          </div>
+      <div className="bg-white border-b border-gray-100 shadow-sm px-4 py-3">
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <Image src="/logo_ecouni.png" alt="EcoUni" width={100} height={40} className="object-contain flex-shrink-0" />
           <div>
-            <p className="font-bold text-gray-900 text-sm leading-tight">Disponibilidade — {nomeForn}</p>
+            <p className="font-bold text-gray-900 text-sm leading-tight">{nomeForn}</p>
             <p className="text-xs text-gray-400">Informe as quantidades disponíveis para as próximas semanas</p>
           </div>
         </div>
