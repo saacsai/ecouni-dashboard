@@ -80,7 +80,7 @@ export default function PedidosPage() {
       .neq('status', 'cancelado')
       .order('created_at')
       .then(({ data }) => {
-        setPedidos((data as PedidoFull[]) || [])
+        setPedidos((data as unknown as PedidoFull[]) || [])
         setLoading(false)
       })
   }, [cicloId])
