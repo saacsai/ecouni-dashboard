@@ -30,6 +30,14 @@ yarn-error.log*
 # vercel
 .vercel
 
+# documentos institucionais sensíveis (CPF, CNPJ, valores de fomento assinados)
+# repo é público — nunca versionar PDFs/docx originais de Plano/
+Plano/*.pdf
+Plano/*.docx
+Plano/**/*.pdf
+Plano/**/*.docx
+logotipo/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
